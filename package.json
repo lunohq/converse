@@ -1,0 +1,19 @@
+{
+  "name": "converse",
+  "version": "0.0.1",
+  "description": "Framework for building conversational bots",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lunohq/converse.git"
+  },
+  "author": "Michael Hahn <michael@lunohq.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lunohq/converse/issues"
+  },
+  "homepage": "https://github.com/lunohq/converse#readme"
+}
