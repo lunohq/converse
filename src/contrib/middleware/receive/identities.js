@@ -19,6 +19,6 @@ export default async function identities({ ctx, next }) {
       ...team,
     },
   }
-  next()
+  return next()
 }
 /*eslint-enable no-param-reassign*/
