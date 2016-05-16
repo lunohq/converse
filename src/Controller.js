@@ -49,6 +49,7 @@ class Controller {
 
   spawn = async (teamId) => {
     debug('Spawning bot for team', { teamId })
+
     if (this.bots[teamId] !== undefined) {
       debug('Team already connected', { teamId })
       return false
@@ -77,7 +78,11 @@ class Controller {
     })
 
     debug('Bot started', { teamId })
-    return true
+    return bot
+  }
+
+  getBot(teamId) {
+    return this.bots[teamId]
   }
 
 }
