@@ -9,13 +9,6 @@ const debug = require('debug')('converse:controller')
 bluebird.promisifyAll(redis.RedisClient.prototype)
 bluebird.promisifyAll(redis.Multi.prototype)
 
-// for PONG events, write to a hash of converse:pong:<team_id>: <connection id>: <last timestamp>, this will let us show that the bot is currently connected.
-//
-// these should expire after a certain amount of time.
-//
-//
-// this will also let watchdog ensure that we always have two connections open.
-
 class Controller {
 
   constructor(config) {
