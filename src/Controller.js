@@ -21,10 +21,13 @@ class Controller {
     this.redis = redis.createClient(redisConfig)
     this.bots = {}
     this.solo = solo !== undefined ? solo : false
-    this.receive = new Middleware('receive')
-    this.send = new Middleware('send')
-    this.sent = new Middleware('sent')
     this.logger = typeof logger === 'object' ? logger : console
+    this.middleware = {
+      spawning: new Middleware('spawning'),
+      receive: new Middleware('receive'),
+      send: new Middleware('send'),
+      sent: new Middleware('sent'),
+    }
   }
 
   start = async () => {
@@ -53,21 +56,26 @@ class Controller {
 
     debug('Retrieving team', { teamId })
     const team = await this.getTeam(teamId)
+
+    await this.middleware.spawning.run({ team })
+
     debug('Creating bot', { team })
     const bot = new Bot({
       team,
       logger: this.logger,
-      receive: this.receive,
-      send: this.send,
-      sent: this.sent,
+      receive: this.middleware.receive,
+      send: this.middleware.send,
+      sent: this.middleware.sent,
     })
     this.bots[teamId] = bot
+
     debug('Starting bot', { bot })
     bot.start()
     bot.on(DISCONNECT, () => {
       debug('Bot disconnected', { teamId })
       delete this.bots[teamId]
     })
+
     debug('Bot started', { teamId })
     return true
   }
