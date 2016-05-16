@@ -21,7 +21,6 @@ class Middleware {
     try {
       result = await fn({ ctx, ...other })
     } catch (err) {
-      console.log('bla', err)
       ctx.onerror(err)
     }
     debug('Finished running middleware: %s', this.name)
