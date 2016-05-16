@@ -1,3 +1,5 @@
+const debug = require('debug')('converse:compose')
+
 /**
  * Compose `middleware` returning
  * a fully valid middleware comprised
@@ -21,6 +23,7 @@ export default function compose(middleware) {
       if (i <= index) return Promise.reject(new Error('next() called multiple times'))
       index = i
       const fn = middleware[i] || next
+      debug('Running middleware: %s - %s', i, !!fn)
       if (!fn) return Promise.resolve()
       try {
         return Promise.resolve(fn({

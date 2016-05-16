@@ -2,6 +2,7 @@ import bluebird from 'bluebird'
 import redis from 'redis'
 
 import Bot, { DISCONNECT } from './Bot'
+import Context from './Context'
 import Middleware from './Middleware'
 
 const debug = require('debug')('converse:controller')
@@ -41,7 +42,8 @@ class Controller {
     debug('Retrieving team', { teamId })
     const team = await this.getTeam(teamId)
 
-    await this.middleware.spawn.run({ team })
+    const ctx = new Context({ logger: this.logger, team })
+    await this.middleware.spawn.run({ ctx, team })
 
     debug('Creating bot', { team })
     const bot = new Bot({
