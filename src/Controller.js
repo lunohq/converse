@@ -14,13 +14,11 @@ class Controller {
   constructor(config) {
     this.config = config
 
-    const { redis: redisConfig, logger, queue, getTeam, solo } = config
+    const { redis: redisConfig, logger, getTeam, } = config
     // TODO add invariant
-    this.queue = queue
     this.getTeam = getTeam
     this.redis = redis.createClient(redisConfig)
     this.bots = {}
-    this.solo = solo !== undefined ? solo : false
     this.logger = typeof logger === 'object' ? logger : console
     this.middleware = {
       spawn: new Middleware('spawn'),
@@ -30,22 +28,7 @@ class Controller {
     }
   }
 
-  start = async () => {
-    this.listen()
-  }
-
-  listen = async () => {
-    debug('Listening for new connections')
-    const result = await this.redis.blpopAsync(this.queue, 0)
-    const teamId = result[1]
-    debug('Received team from queue', { teamId })
-    const connected = await this.spawn(teamId)
-    if (!connected && !this.solo) {
-      debug('Pushing team back into queue', { teamId })
-      await this.redis.rpushAsync(this.queue, teamId)
-    }
-    return this.listen()
-  }
+  start = async () => {}
 
   spawn = async (teamId) => {
     debug('Spawning bot for team', { teamId })

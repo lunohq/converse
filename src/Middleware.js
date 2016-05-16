@@ -14,13 +14,12 @@ class Middleware {
     return this
   }
 
-  run({ ctx, last, ...other }) {
-    let middleware = this.middleware
-    if (last) {
-      middleware = [...this.middleware, last]
-    }
-    const fn = compose(middleware)
-    return fn({ ctx, ...other }).catch(ctx.onerror)
+  run({ ctx, ...other }) {
+    const fn = compose(this.middleware)
+    return fn({ ctx, ...other }).catch(ctx.onerror).then(res => {
+      debug(`Finished running "${this.name}" middleware`)
+      return res
+    })
   }
 
 }
