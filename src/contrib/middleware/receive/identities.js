@@ -9,7 +9,7 @@ export default async function identities({ ctx, next }) {
     bot = rtm.dataStore.getUserById(botId)
     team = rtm.dataStore.getTeamById(teamId)
   }
-  ctx.identites = {
+  ctx.identities = {
     bot: {
       id: botId,
       ...bot,
