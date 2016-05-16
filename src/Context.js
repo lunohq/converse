@@ -4,12 +4,13 @@
  */
 class Context {
 
-  constructor(context) {
-    Object.assign(this, context)
+  constructor({ logger, ...ctx }) {
+    this.logger = logger
+    Object.assign(this, ctx)
   }
 
   onerror(err) {
-    console.error('unhandled middleware error', err)
+    this.logger.error('unhandled middleware error', err)
   }
 
 }

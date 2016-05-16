@@ -14,10 +14,9 @@ export default function compose(middleware) {
     if (typeof fn !== 'function') throw new TypeError('Middleware must be composed of functions!')
   }
 
-  return function ({ next, ...other }) {
+  return function _compose({ next, ...other }) {
     // last called middleware #
     let index = -1
-    return dispatch(0)
     function dispatch(i) {
       if (i <= index) return Promise.reject(new Error('next() called multiple times'))
       index = i
@@ -34,5 +33,6 @@ export default function compose(middleware) {
         return Promise.reject(err)
       }
     }
+    return dispatch(0)
   }
 }

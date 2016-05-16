@@ -1,7 +1,7 @@
 import bluebird from 'bluebird'
 import redis from 'redis'
 
-import Bot from './Bot'
+import Bot, { DISCONNECT } from './Bot'
 import Middleware from './Middleware'
 
 const debug = require('debug')('converse:controller')
@@ -18,26 +18,24 @@ bluebird.promisifyAll(redis.Multi.prototype)
 
 class Controller {
 
-  constructor({ config, queue, getTeam, solo }) {
+  constructor(config) {
+    this.config = config
+
+    const { redis: redisConfig, logger, queue, getTeam, solo } = config
     // TODO add invariant
     this.queue = queue
     this.getTeam = getTeam
-    // TODO pass in options
-    this.redis = redis.createClient()
+    this.redis = redis.createClient(redisConfig)
     this.bots = {}
     this.solo = solo !== undefined ? solo : false
-    this.receive = new Middleware()
-    this.send = new Middleware()
-    this.config = config !== undefined ? config : {}
+    this.receive = new Middleware('receive')
+    this.send = new Middleware('send')
+    this.sent = new Middleware('sent')
+    this.logger = typeof logger === 'object' ? logger : console
   }
 
   start = async () => {
-    // TODO use lrange and ltrim to fetch an initial number of users
-    try {
-      await this.listen()
-    } catch (err) {
-      throw err
-    }
+    this.listen()
   }
 
   listen = async () => {
@@ -50,7 +48,7 @@ class Controller {
       debug('Pushing team back into queue', { teamId })
       await this.redis.rpushAsync(this.queue, teamId)
     }
-    return await this.listen()
+    return this.listen()
   }
 
   spawn = async (teamId) => {
@@ -65,13 +63,18 @@ class Controller {
     debug('Creating bot', { team })
     const bot = new Bot({
       team,
-      config: this.config,
+      logger: this.logger,
       receive: this.receive,
       send: this.send,
+      sent: this.sent,
     })
     this.bots[teamId] = bot
     debug('Starting bot', { bot })
     bot.start()
+    bot.on(DISCONNECT, () => {
+      debug('Bot disconnected', { teamId })
+      delete this.bots[teamId]
+    })
     debug('Bot started', { teamId })
     return true
   }

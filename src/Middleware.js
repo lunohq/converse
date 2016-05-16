@@ -3,12 +3,13 @@ const debug = require('debug')('converse:middleware')
 
 class Middleware {
 
-  constructor() {
+  constructor(name) {
     this.middleware = []
+    this.name = name
   }
 
   use(fn) {
-    debug('use %s', fn._name || fn.name || '-')
+    debug('%s use %s', this.name || '-', fn.name || '-')
     this.middleware.push(fn)
     return this
   }

@@ -1,11 +1,18 @@
+import Emitter from 'events'
+
 import { RtmClient, RTM_EVENTS, WebClient } from '@slack/client'
 
 import Context from './Context'
 
 const debug = require('debug')('converse:bot')
 
+export const DISCONNECT = RTM_EVENTS.DISCONNECT
+
 function send({ ctx, message }) {
-  if (ctx.send === false) return
+  if (ctx.send === false) {
+    debug('Dropping message')
+    return null
+  }
 
   const { bot } = ctx
   const payload = {
@@ -30,24 +37,25 @@ function send({ ctx, message }) {
 
   const requiresWeb = (payload.attachments || !payload.as_user)
   if (requiresWeb) {
-    if (!bot.config.token) {
-      throw new Error('No token for web api')
-    }
+    debug('Sending message via web api', { payload })
     return bot.api.chat.postMessage(payload.channel, payload.text, payload)
-  } else {
-    return bot.rtm.send(payload)
   }
+
+  debug('Sending message via rtm', { payload })
+  return bot.rtm.send(payload)
 }
 
-class Bot {
+class Bot extends Emitter {
 
   constructor(config) {
+    super()
     this.config = config
 
-    const { team, receive, send } = config
+    const { logger, team, receive, send, sent } = config
     // TODO Add invariant checks for the structure of team we expect
     this.config.token = team.token
     this.team = team
+    this.logger = logger
     this.config = config !== undefined ? config : {}
 
     this.rtm = new RtmClient(this.team.token, config.rtm)
@@ -55,11 +63,12 @@ class Bot {
     this.middleware = {
       receive,
       send,
+      sent,
     }
   }
 
   createContext() {
-    return new Context({ team: this.team, bot: this })
+    return new Context({ logger: this.logger, team: this.team, bot: this })
   }
 
   start() {
@@ -69,13 +78,13 @@ class Bot {
       this.rtm.on(event, (message) => this.receive(message))
     }
 
-    // TODO emit events for when the bot gets disconnected so the controller can
-    // remove it from its list of connected clients
-    // https://github.com/slackhq/node-slack-client/blob/master/lib/clients/events/client.js#L26
+    this.rtm.on(RTM_EVENTS.DISCONNECT, () => this.emit(DISCONNECT))
+    this.rtm.on(RTM_EVENTS.WS_ERROR, () => this.emit(DISCONNECT))
+    this.rtm.on(RTM_EVENTS.WS_CLOSE, () => this.emit(DISCONNECT))
   }
 
   receive(message) {
-    debug('Bot.receive', { team: this.team, message })
+    debug('Received message', { team: this.team, message })
     const ctx = this.createContext()
     this.middleware.receive.run({ ctx, message })
   }
@@ -89,18 +98,21 @@ class Bot {
     }
 
     message.channel = source.channel
-    debug('Bot.reply', { team: this.team, message, source, response })
-    return this.send(message)
+    debug('Reply', { team: this.team, message, source, response })
+    return this.send(source, message)
   }
 
   startTyping(source) {
     return this.reply(source, { type: 'typing' })
   }
 
-  send(message) {
-    debug('Bot send', { team: this.team, message })
+  send = async (source, message) => {
+    debug('Send', { team: this.team, message, source })
     const ctx = this.createContext()
-    return this.middleware.send.run({ ctx, message }).then(() => send({ ctx, message }))
+    await this.middleware.send.run({ ctx, message, source })
+    const response = await send({ ctx, message })
+    debug('Sent', { response })
+    return this.middleware.sent.run({ ctx, message, source, response })
   }
 
 }
