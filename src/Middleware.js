@@ -14,13 +14,18 @@ class Middleware {
     return this
   }
 
-  run({ ctx, ...other }) {
+  run = async ({ ctx, ...other }) => {
     debug('Running middleware: %s', this.name)
     const fn = compose(this.middleware)
-    return fn({ ctx, ...other }).then(res => {
-      debug('Finished running middleware: %s', this.name)
-      return res
-    }).catch(ctx.onerror)
+    let result
+    try {
+      result = await fn({ ctx, ...other })
+    } catch (err) {
+      console.log('bla', err)
+      ctx.onerror(err)
+    }
+    debug('Finished running middleware: %s', this.name)
+    return result
   }
 
 }
