@@ -23,7 +23,7 @@ class Controller {
     this.solo = solo !== undefined ? solo : false
     this.logger = typeof logger === 'object' ? logger : console
     this.middleware = {
-      spawning: new Middleware('spawning'),
+      spawn: new Middleware('spawn'),
       receive: new Middleware('receive'),
       send: new Middleware('send'),
       sent: new Middleware('sent'),
@@ -58,7 +58,7 @@ class Controller {
     debug('Retrieving team', { teamId })
     const team = await this.getTeam(teamId)
 
-    await this.middleware.spawning.run({ team })
+    await this.middleware.spawn.run({ team })
 
     debug('Creating bot', { team })
     const bot = new Bot({
