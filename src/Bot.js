@@ -133,7 +133,7 @@ class Bot extends Emitter {
     const response = await send({ ctx, message })
     debug('Sent', { response })
     if (response !== null) {
-      return this.middleware.sent.run({ ctx, message, source, response })
+      return this.middleware.sent.run({ ctx, message, source, response }).then(() => Promise.resolve(response))
     }
     return Promise.resolve()
   }
