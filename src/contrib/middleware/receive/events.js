@@ -43,12 +43,16 @@ export default async function events({ ctx, message, next }) {
       const mention = new RegExp(`\<\@${botId}\>`, 'i')
       if (message.text.match(directMention)) {
         message.text = replaceDirectMention(directMention, message.text)
-        message.event = 'direct_message'
+        message.event = 'direct_mention'
       } else if (message.text.match(mention)) {
         message.event = 'mention'
       } else {
         message.event = 'ambient'
       }
+    }
+  } else if (message.type === 'reaction_added') {
+    if (message.user === botId) {
+      message.event = 'self'
     }
   }
   return next()
