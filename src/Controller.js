@@ -36,7 +36,7 @@ class Controller {
 
     if (this.bots[teamId] !== undefined) {
       debug('Team already connected', { teamId })
-      return false
+      return this.bots[teamId]
     }
 
     debug('Retrieving team', { teamId })
