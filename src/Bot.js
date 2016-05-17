@@ -1,12 +1,12 @@
 import Emitter from 'events'
 
-import { RtmClient, RTM_EVENTS, WebClient, MemoryDataStore } from '@slack/client'
+import { RtmClient, RTM_EVENTS, CLIENT_EVENTS, WebClient, MemoryDataStore } from '@slack/client'
 
 import Context from './Context'
 
 const debug = require('debug')('converse:bot')
 
-export const DISCONNECT = RTM_EVENTS.DISCONNECT
+export const DISCONNECT = CLIENT_EVENTS.RTM.DISCONNECT
 
 function send({ ctx, message }) {
   if (ctx.send === false) {
@@ -57,6 +57,7 @@ class Bot extends Emitter {
     this.team = team
     this.logger = logger
     this.config = config !== undefined ? config : {}
+    this.identity = {}
 
     let rtmConfig
     if (config.rtm === undefined) {
@@ -88,9 +89,18 @@ class Bot extends Emitter {
       this.rtm.on(event, (message) => this.receive(message))
     }
 
-    this.rtm.on(RTM_EVENTS.DISCONNECT, () => this.emit(DISCONNECT))
-    this.rtm.on(RTM_EVENTS.WS_ERROR, () => this.emit(DISCONNECT))
-    this.rtm.on(RTM_EVENTS.WS_CLOSE, () => this.emit(DISCONNECT))
+    this.rtm.on(CLIENT_EVENTS.RTM.DISCONNECT, () => this.emit(DISCONNECT))
+    this.rtm.on(CLIENT_EVENTS.RTM.WS_ERROR, () => this.emit(DISCONNECT))
+    this.rtm.on(CLIENT_EVENTS.RTM.WS_CLOSE, () => this.emit(DISCONNECT))
+    this.rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, () => {
+      debug('Fetching identity', { userId: this.rtm.activeUserId })
+      this.identity = this.rtm.dataStore.getUserById(this.rtm.activeUserId)
+      if (!this.identity) {
+        this.logger.warning('Failed to find identity', { userId: this.rtm.activeUserId })
+      } else {
+        debug('Attached identity', { identity: this.identity })
+      }
+    })
   }
 
   receive(message) {
