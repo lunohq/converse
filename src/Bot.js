@@ -1,6 +1,6 @@
 import Emitter from 'events'
 
-import { RtmClient, RTM_EVENTS, WebClient } from '@slack/client'
+import { RtmClient, RTM_EVENTS, WebClient, MemoryDataStore } from '@slack/client'
 
 import Context from './Context'
 
@@ -58,7 +58,17 @@ class Bot extends Emitter {
     this.logger = logger
     this.config = config !== undefined ? config : {}
 
-    this.rtm = new RtmClient(this.team.token, config.rtm)
+    let rtmConfig
+    if (config.rtm === undefined) {
+      rtmConfig = {
+        dataStore: new MemoryDataStore(),
+        autoReconnect: true,
+      }
+    } else {
+      rtmConfig = config.rtm
+    }
+
+    this.rtm = new RtmClient(this.team.token, rtmConfig)
     this.api = new WebClient(this.team.token)
     this.middleware = {
       receive,
