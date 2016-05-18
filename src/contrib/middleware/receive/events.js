@@ -39,6 +39,8 @@ export default async function events({ ctx, message, next }) {
     } else if (message.channel.match(/^D/)) {
       message.text = replaceDirectMention(directMention, message.text)
       message.event = 'direct_message'
+    } else if (message.subtype === 'bot_message') {
+      message.event = 'bot_message'
     } else {
       const mention = new RegExp(`\<\@${botId}\>`, 'i')
       if (message.text.match(directMention)) {
