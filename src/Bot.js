@@ -90,8 +90,6 @@ class Bot extends Emitter {
     }
 
     this.rtm.on(CLIENT_EVENTS.RTM.DISCONNECT, () => this.emit(DISCONNECT))
-    this.rtm.on(CLIENT_EVENTS.RTM.WS_ERROR, () => this.emit(DISCONNECT))
-    this.rtm.on(CLIENT_EVENTS.RTM.WS_CLOSE, () => this.emit(DISCONNECT))
     this.rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, () => {
       debug('Fetching identity', { userId: this.rtm.activeUserId })
       this.identity = this.rtm.dataStore.getUserById(this.rtm.activeUserId)
