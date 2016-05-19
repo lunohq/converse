@@ -58,7 +58,7 @@ class Controller {
     debug('Starting bot', { bot })
     bot.start()
     bot.on(DISCONNECT, () => {
-      debug('Bot disconnected', { teamId })
+      this.logger.info('Bot disconnected', { teamId })
       delete this.bots[teamId]
     })
 
