@@ -1,7 +1,7 @@
 import bluebird from 'bluebird'
 import redis from 'redis'
 
-import Bot, { DISCONNECT } from './Bot'
+import Bot, { DISCONNECT, AUTHENTICATED } from './Bot'
 import Context from './Context'
 import Middleware from './Middleware'
 
@@ -57,13 +57,18 @@ class Controller {
 
     debug('Starting bot', { bot })
     bot.start()
-    bot.on(DISCONNECT, () => {
-      this.logger.info('Bot disconnected', { teamId })
-      delete this.bots[teamId]
-    })
 
-    debug('Bot started', { teamId })
-    return bot
+    return new Promise((resolve, reject) => {
+      bot.on(AUTHENTICATED, () => {
+        debug('Bot started', { teamId })
+        resolve(bot)
+      })
+      bot.on(DISCONNECT, (err, code) => {
+        this.logger.info('Bot disconnected', { teamId, err, code })
+        delete this.bots[teamId]
+        reject(err, code)
+      })
+    })
   }
 
   getBot(teamId) {
