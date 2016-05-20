@@ -122,8 +122,13 @@ class Bot extends Emitter {
     return this.send(source, message)
   }
 
+  replyWithTyping(source, response) {
+    this.startTyping(source)
+    return this.reply(source, response)
+  }
+
   startTyping(source) {
-    return this.reply(source, { type: 'typing' })
+    this.reply(source, { type: 'typing' })
   }
 
   send = async (source, message) => {
