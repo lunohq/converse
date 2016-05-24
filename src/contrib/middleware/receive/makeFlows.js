@@ -1,7 +1,14 @@
 const debug = require('debug')('bot:flows:middleware')
 
-export default async ({ flows }) => async ({ ctx, message, next }) => {
-  for (const flow of flows) {
+export class Flow {
+
+  match = async () => false
+  run = async () => {}
+
+}
+
+export default ({ flows: registered }) => async function flows({ ctx, message, next }) {
+  for (const flow of registered) {
     debug('Checking flow: %s', flow.constructor.name)
     const match = await flow.match({ ctx, message })
     if (match) {
