@@ -1,24 +1,17 @@
-import bluebird from 'bluebird'
-import redis from 'redis'
-
 import Bot, { DISCONNECT, AUTHENTICATED } from './Bot'
 import Context from './Context'
 import Middleware from './Middleware'
 
 const debug = require('debug')('converse:controller')
 
-bluebird.promisifyAll(redis.RedisClient.prototype)
-bluebird.promisifyAll(redis.Multi.prototype)
-
 class Controller {
 
   constructor(config) {
     this.config = config
 
-    const { redis: redisConfig, logger, getTeam, } = config
+    const { logger, getTeam, } = config
     // TODO add invariant
     this.getTeam = getTeam
-    this.redis = redis.createClient(redisConfig)
     this.bots = {}
     this.logger = typeof logger === 'object' ? logger : console
     this.middleware = {
