@@ -1,4 +1,4 @@
-import Bot, { DISCONNECT, AUTHENTICATED } from './Bot'
+import Bot, { DISCONNECT, CONNECTED } from './Bot'
 import Context from './Context'
 import Middleware from './Middleware'
 
@@ -52,7 +52,7 @@ class Controller {
     bot.start()
 
     return new Promise((resolve, reject) => {
-      bot.on(AUTHENTICATED, () => {
+      bot.on(CONNECTED, () => {
         debug('Bot started', { teamId })
         resolve(bot)
       })

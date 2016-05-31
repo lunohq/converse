@@ -7,7 +7,7 @@ import Context from './Context'
 const debug = require('debug')('converse:bot')
 
 export const DISCONNECT = CLIENT_EVENTS.RTM.DISCONNECT
-export const AUTHENTICATED = CLIENT_EVENTS.RTM.AUTHENTICATED
+export const CONNECTED = CLIENT_EVENTS.RTM_CONNECTION_OPENED
 
 function send({ ctx, message }) {
   if (ctx.send === false) {
@@ -90,7 +90,7 @@ class Bot extends Emitter {
     }
 
     this.rtm.on(CLIENT_EVENTS.RTM.DISCONNECT, (err, code) => this.emit(DISCONNECT, err, code))
-    this.rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, () => {
+    this.rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, () => {
       debug('Fetching identity', { userId: this.rtm.activeUserId })
       this.identity = this.rtm.dataStore.getUserById(this.rtm.activeUserId)
       if (!this.identity) {
@@ -98,7 +98,7 @@ class Bot extends Emitter {
       } else {
         debug('Attached identity', { identity: this.identity })
       }
-      this.emit(AUTHENTICATED)
+      this.emit(CONNECTED)
     })
     this.rtm.start()
   }
