@@ -53,6 +53,10 @@ export default async function events({ ctx, message, next }) {
         message.event = 'ambient'
       }
     }
+
+    if (!message.subtype && message.event) {
+      message.event = `${message.event}:message`
+    }
   } else if (message.type === 'reaction_added') {
     if (message.user === botId) {
       message.event = 'self'
