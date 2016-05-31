@@ -106,7 +106,7 @@ class Bot extends Emitter {
   receive(message) {
     debug('Received message', { team: this.team, message })
     const ctx = this.createContext()
-    this.middleware.receive.run({ ctx, message })
+    return this.middleware.receive.run({ ctx, message })
   }
 
   reply(source, response) {
