@@ -9,13 +9,12 @@ function replaceDirectMention(mention, text) {
 
 /*eslint-disable no-param-reassign*/
 export default async function events({ ctx, message, next }) {
-  const { identities } = ctx
-  if (!identities) {
-    debug('Not running, requires `identities` on context')
+  if (!(ctx.bot && ctx.bot.identity)) {
+    debug('Not running, requires `bot.identity` on context')
     return next()
   }
 
-  const botId = identities.bot.id
+  const { bot: { identity: { id: botId } } } = ctx
   const directMention = new RegExp(`^\<\@${botId}\>`, 'i')
   if (message.type === 'message') {
     if (message.text) {
