@@ -1,5 +1,5 @@
 import compose from './compose'
-const debug = require('debug')('converse:middleware')
+const debug = require('debug')('converse:Middleware')
 
 class Middleware {
 

@@ -4,7 +4,7 @@ import { RtmClient, RTM_EVENTS, CLIENT_EVENTS, WebClient, MemoryDataStore } from
 
 import Context from './Context'
 
-const debug = require('debug')('converse:bot')
+const debug = require('debug')('converse:Bot')
 
 export const DISCONNECT = CLIENT_EVENTS.RTM.DISCONNECT
 export const CONNECTED = CLIENT_EVENTS.RTM_CONNECTION_OPENED

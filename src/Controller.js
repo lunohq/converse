@@ -2,7 +2,7 @@ import Bot, { DISCONNECT, CONNECTED } from './Bot'
 import Context from './Context'
 import Middleware from './Middleware'
 
-const debug = require('debug')('converse:controller')
+const debug = require('debug')('converse:Controller')
 
 class Controller {
 
