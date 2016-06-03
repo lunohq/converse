@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 
-import { sign, unsign } from 'cookie-signature'
+import { sign, unsign } from './utils/crypto'
 import { WebClient } from '@slack/client'
 
 const debug = require('debug')('converse:Server')
