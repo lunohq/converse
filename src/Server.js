@@ -267,6 +267,20 @@ class Server extends EventEmitter {
     })
   }
 
+  createWebhookEndpoints(app) {
+    this.logger.info('Configuring /slack/receive endpoint')
+    app.post('/slack/receive', (req, res) => {
+      if (req.body.command) {
+        const message = {}
+        for (const key of Object.keys(req.body)) {
+          message[key] = req.body[key]
+        }
+        debug('Slack webhook received', { message })
+        res.status(200)
+      }
+    })
+  }
+
 }
 
 export default Server
