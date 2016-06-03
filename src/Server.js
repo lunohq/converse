@@ -110,9 +110,9 @@ class Server extends EventEmitter {
     return this.getAuthorizeURL({ scopes: this.scopes.install, state: 'install', teamId })
   }
 
-  getLoginUserDetails = async (auth) => auth
+  getLoginAuthDetails = async (auth) => auth
 
-  getInstallUserDetails = async (auth) => {
+  getInstallAuthDetails = async (auth) => {
     const api = new WebClient(auth.access_token)
     const details = await api.auth.test()
     debug('Install User Details', details)
@@ -142,41 +142,33 @@ class Server extends EventEmitter {
     const api = new WebClient()
     const auth = await api.oauth.access(this.clientId, this.clientSecret, code)
 
-    let userDetails
+    let authDetails
     switch (state) {
       case 'login':
-        debug('Fetching login user details', { state })
-        userDetails = await this.getLoginUserDetails(auth)
+        debug('Fetching login auth details', { state })
+        authDetails = await this.getLoginAuthDetails(auth)
         break
       default:
-        debug('Fetching install user details', { state })
-        userDetails = await this.getInstallUserDetails(auth)
+        debug('Fetching install auth details', { state })
+        authDetails = await this.getInstallAuthDetails(auth)
     }
 
-    debug('OAuth User Details', userDetails)
-    const {
-      user: { id: userId, email: userEmail, name: userName },
-      team: { id: teamId, name: teamName, domain: teamDomain },
-    } = userDetails
-
+    debug('OAuth Details', authDetails)
+    const { user: userDetails, team: teamDetails } = authDetails
     const isNew = {
       team: false,
       user: false,
       bot: false,
     }
 
-    let team = await this.storage.teams.get(teamId)
+    let team = await this.storage.teams.get(teamDetails.id)
     if (!team) {
       isNew.team = true
+      const { id, ...rest } = teamDetails
       team = {
-        id: teamId,
-        createdBy: userId,
-      }
-      if (teamName) {
-        team.name = teamName
-      }
-      if (teamDomain) {
-        team.domain = teamDomain
+        id,
+        createdBy: userDetails.id,
+        ...rest,
       }
     }
 
@@ -205,18 +197,14 @@ class Server extends EventEmitter {
     }
 
     const scopes = auth.scope.split(',')
-    let user = await this.storage.users.get(userId)
+    let user = await this.storage.users.get(userDetails.id)
     if (!user) {
       isNew.user = true
+      const { id, ...rest } = userDetails
       user = {
-        id: userId,
-        teamId,
-      }
-      if (userEmail) {
-        user.email = userEmail
-      }
-      if (userName) {
-        user.user = userName
+        id,
+        teamId: teamDetails.id,
+        ...rest,
       }
     }
     user.accessToken = auth.access_token
