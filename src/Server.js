@@ -177,7 +177,7 @@ class Server extends EventEmitter {
       team.bot = {
         accessToken: auth.bot.bot_access_token,
         userId: auth.bot.bot_user_id,
-        createdBy: userId,
+        createdBy: userDetails.id,
       }
       this.emit('create_bot', team)
     }
