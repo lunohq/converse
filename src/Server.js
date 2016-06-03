@@ -132,10 +132,10 @@ class Server extends EventEmitter {
       }
       this.emit('create_bot', team)
     }
-    if (team.bot && team.bot.accessToken !== auth.bot.bot_access_token) {
+    if (team.bot && auth.bot && team.bot.accessToken !== auth.bot.bot_access_token) {
       team.bot.accessToken = auth.bot.access_token
     }
-    if (team.bot && team.bot.userId !== auth.bot.bot_user_id) {
+    if (team.bot && auth.bot && team.bot.userId !== auth.bot.bot_user_id) {
       team.bot.userId = auth.bot.bot_user_id
     }
 
