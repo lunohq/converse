@@ -12,14 +12,71 @@ class Server extends EventEmitter {
   constructor(config) {
     super()
     const { clientId, clientSecret, storage, scopes, logger } = config
-    // TODO invariant checks
     this.storage = storage
     this.clientId = clientId
     this.clientSecret = clientSecret
     this.scopes = scopes
-    this.logger = logger
+    this.logger = logger || console
 
+    this.validate()
+  }
+
+  validate() {
+    if (!this.clientId) {
+      throw new Error('"clientId" is required')
+    }
+    if (!this.clientSecret) {
+      throw new Error('"clientSecret" is required')
+    }
+    this.validateScopes()
+    this.validateStorage()
     this.validateLoginScopes()
+  }
+
+  validateScopes() {
+    if (!this.scopes) {
+      throw new Error('"scopes" is required')
+    }
+
+    if (!this.scopes.login) {
+      throw new Error('"scopes.login" is required')
+    }
+    if (typeof this.scopes.login.join !== 'function') {
+      throw new Error('"scopes.login" must have an array interface')
+    }
+
+    if (!this.scopes.install) {
+      throw new Error('"scopes.install" is required')
+    }
+    if (typeof this.scopes.install.join !== 'function') {
+      throw new Error('"scopes.install" must have an array interface')
+    }
+  }
+
+  validateStorage() {
+    if (!this.storage) {
+      throw new Error('"storage" is required')
+    }
+
+    if (!this.storage.users) {
+      throw new Error('"storage.users" is required')
+    }
+    if (typeof this.storage.users.get !== 'function') {
+      throw new Error('"storage.users.get" must be a function')
+    }
+    if (typeof this.storage.users.save !== 'function') {
+      throw new Error('"storage.users.save" must be a function')
+    }
+
+    if (!this.storage.teams) {
+      throw new Error('"storage.teams" is required')
+    }
+    if (typeof this.storage.teams.get !== 'function') {
+      throw new Error('"storage.teams.get" must be a function')
+    }
+    if (typeof this.storage.teams.save !== 'function') {
+      throw new Error('"storage.teams.save" must be a function')
+    }
   }
 
   validateLoginScopes() {
