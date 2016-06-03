@@ -102,10 +102,15 @@ class Server extends EventEmitter {
       team: { id: teamId, name: teamName, domain: teamDomain },
     } = userDetails
 
+    const isNew = {
+      team: false,
+      user: false,
+      bot: false,
+    }
+
     let team = await this.storage.teams.get(teamId)
-    let isNew = false
     if (!team) {
-      isNew = true
+      isNew.team = true
       team = {
         id: teamId,
         createdBy: userId,
@@ -118,7 +123,8 @@ class Server extends EventEmitter {
       }
     }
 
-    if (auth.bot) {
+    if (!team.bot && auth.bot) {
+      isNew.bot = true
       team.bot = {
         token: auth.bot.bot_access_token,
         userId: auth.bot.bot_user_id,
@@ -127,10 +133,9 @@ class Server extends EventEmitter {
       this.emit('create_bot', team)
     }
 
-    debug('Saving team', { team, isNew })
-    team = await this.storage.teams.save({ team, isNew })
-    team.isNew = isNew
-    if (isNew) {
+    debug('Saving team', { team, isNew: isNew.team })
+    team = await this.storage.teams.save({ team, isNew: isNew.team })
+    if (isNew.team) {
       this.emit('create_team', team)
     } else {
       this.emit('update_team', team)
@@ -138,9 +143,8 @@ class Server extends EventEmitter {
 
     const scopes = auth.scope.split(',')
     let user = await this.storage.users.get(userId)
-    isNew = false
     if (!user) {
-      isNew = true
+      isNew.user = true
       user = {
         id: userId,
         teamId,
@@ -155,10 +159,9 @@ class Server extends EventEmitter {
     user.accessToken = auth.access_token
     user.scopes = scopes
 
-    debug('Saving user', { user, isNew })
-    user = await this.storage.users.save({ user, isNew })
-    user.isNew = isNew
-    if (isNew) {
+    debug('Saving user', { user, isNew: isNew.user })
+    user = await this.storage.users.save({ user, isNew: isNew.user })
+    if (isNew.user) {
       this.emit('create_user', user)
     } else {
       this.emit('update_user', user)
@@ -168,6 +171,7 @@ class Server extends EventEmitter {
     res.locals.auth = auth
     res.locals.user = user
     res.locals.team = team
+    res.locals.isNew = isNew
     /*eslint-enable no-param-reassign*/
   }
 
@@ -207,8 +211,8 @@ class Server extends EventEmitter {
         res.redirect('/')
       }
 
-      const { locals: { auth, user, team } } = res
-      this.emit('authenticated', { auth, user, team })
+      const { locals: { auth, user, team, isNew } } = res
+      this.emit('authenticated', { auth, user, team, isNew })
     })
   }
 
