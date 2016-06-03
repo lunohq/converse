@@ -126,11 +126,17 @@ class Server extends EventEmitter {
     if (!team.bot && auth.bot) {
       isNew.bot = true
       team.bot = {
-        token: auth.bot.bot_access_token,
+        accessToken: auth.bot.bot_access_token,
         userId: auth.bot.bot_user_id,
         createdBy: userId,
       }
       this.emit('create_bot', team)
+    }
+    if (team.bot && team.bot.accessToken !== auth.bot.bot_access_token) {
+      team.bot.accessToken = auth.bot.access_token
+    }
+    if (team.bot && team.bot.userId !== auth.bot.bot_user_id) {
+      team.bot.userId = auth.bot.bot_user_id
     }
 
     debug('Saving team', { team, isNew: isNew.team })
