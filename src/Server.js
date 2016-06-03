@@ -37,31 +37,38 @@ class Server extends EventEmitter {
     }
   }
 
-  getAuthorizeURL(scopes, state) {
-    let url = `${SLACK_AUTHORIZE_ENDPOINT}?client_id=${this.clientId}&scope=${scopes.join(',')}`
+  getAuthorizeURL({ scopes, state, teamId }) {
+    let url = `${SLACK_AUTHORIZE_ENDPOINT}?client_id=${this.clientId}&scope=${scopes.join(',')}&team=${teamId}`
     if (state) {
       url = `${url}&state=${sign(state, this.clientSecret)}`
     }
     return url
   }
 
-  getLoginURL() {
-    return this.getAuthorizeURL(this.scopes.login, 'login')
+  getLoginURL(teamId) {
+    return this.getAuthorizeURL({ scopes: this.scopes.login, state: 'login', teamId })
   }
 
-  getInstallURL() {
-    return this.getAuthorizeURL(this.scopes.install, 'install')
+  getInstallURL(teamId) {
+    return this.getAuthorizeURL({ scopes: this.scopes.install, state: 'install', teamId })
   }
 
-  getLoginUserDetails = async (auth) => {
-    const { user: { id: userId }, team: { id: teamId } } = auth
-    return { userId, teamId }
-  }
+  getLoginUserDetails = async (auth) => auth
 
   getInstallUserDetails = async (auth) => {
     const api = new WebClient(auth.access_token)
-    const { team_id: teamId, user_id: userId } = await api.auth.test()
-    return { teamId, userId }
+    const details = await api.auth.test()
+    debug('Install User Details', details)
+    return {
+      team: {
+        id: details.team_id,
+        name: details.team,
+      },
+      user: {
+        id: details.user_id,
+        name: details.user,
+      },
+    }
   }
 
   handleOAuthResponse = async (req, res) => {
@@ -69,7 +76,7 @@ class Server extends EventEmitter {
 
     let state
     if (signedState) {
-      state = unsign(signedState)
+      state = unsign(signedState, this.clientSecret)
       if (state === false) {
         throw new Error('Invalid signature for state')
       }
@@ -81,13 +88,19 @@ class Server extends EventEmitter {
     let userDetails
     switch (state) {
       case 'login':
+        debug('Fetching login user details', { state })
         userDetails = await this.getLoginUserDetails(auth)
         break
       default:
+        debug('Fetching install user details', { state })
         userDetails = await this.getInstallUserDetails(auth)
     }
+
     debug('OAuth User Details', userDetails)
-    const { userId, teamId } = userDetails
+    const {
+      user: { id: userId, email: userEmail, name: userName },
+      team: { id: teamId, name: teamName, domain: teamDomain },
+    } = userDetails
 
     let team = await this.storage.teams.get(teamId)
     let isNew = false
@@ -96,6 +109,12 @@ class Server extends EventEmitter {
       team = {
         id: teamId,
         createdBy: userId,
+      }
+      if (teamName) {
+        team.name = teamName
+      }
+      if (teamDomain) {
+        team.domain = teamDomain
       }
     }
 
@@ -108,7 +127,9 @@ class Server extends EventEmitter {
       this.emit('create_bot', team)
     }
 
+    debug('Saving team', { team, isNew })
     team = await this.storage.teams.save({ team, isNew })
+    team.isNew = isNew
     if (isNew) {
       this.emit('create_team', team)
     } else {
@@ -124,11 +145,19 @@ class Server extends EventEmitter {
         id: userId,
         teamId,
       }
+      if (userEmail) {
+        user.email = userEmail
+      }
+      if (userName) {
+        user.user = userName
+      }
     }
     user.accessToken = auth.access_token
     user.scopes = scopes
 
+    debug('Saving user', { user, isNew })
     user = await this.storage.users.save({ user, isNew })
+    user.isNew = isNew
     if (isNew) {
       this.emit('create_user', user)
     } else {
@@ -144,17 +173,20 @@ class Server extends EventEmitter {
 
   createAuthEndpoints(app, cb) {
     if (this.scopes.login) {
+      this.logger.info('Configuring /login endpoint')
       app.get('/login', (req, res) => {
         res.redirect(this.getLoginURL())
       })
     }
 
     if (this.scopes.install) {
+      this.logger.info('Configuring /install endpoint')
       app.get('/install', (req, res) => {
         res.redirect(this.getInstallURL())
       })
     }
 
+    this.logger.info('Configuring /oauth endpoint')
     app.get('/oauth', async (req, res) => {
       try {
         await this.handleOAuthResponse(req, res)
