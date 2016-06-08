@@ -9,7 +9,7 @@
     "watch": "gulp watch",
     "build": "gulp build",
     "coverage": "gulp coverage",
-    "building": "gulp building"
+    "building": "npm run build && gulp building"
   },
   "repository": {
     "type": "git",
