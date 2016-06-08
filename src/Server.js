@@ -124,7 +124,7 @@ class Server extends EventEmitter {
       },
       user: {
         id: details.user_id,
-        name: details.user,
+        user: details.user,
       },
     }
   }
