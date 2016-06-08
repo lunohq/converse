@@ -120,6 +120,7 @@ class Server extends EventEmitter {
       team: {
         id: details.team_id,
         name: details.team,
+        url: details.url,
       },
       user: {
         id: details.user_id,
