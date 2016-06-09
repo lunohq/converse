@@ -120,6 +120,7 @@ class Server extends EventEmitter {
       team: {
         id: details.team_id,
         name: details.team,
+        url: details.url,
       },
       user: {
         id: details.user_id,
@@ -200,13 +201,18 @@ class Server extends EventEmitter {
     let user = await this.storage.users.get(userDetails.id)
     if (!user) {
       isNew.user = true
-      const { id, ...rest } = userDetails
       user = {
-        id,
+        id: userDetails.id,
         teamId: teamDetails.id,
-        ...rest,
       }
     }
+
+    for (const key of Object.keys(userDetails)) {
+      if (user[key] === undefined) {
+        user[key] = userDetails[key]
+      }
+    }
+
     user.accessToken = auth.access_token
     user.scopes = scopes
 
