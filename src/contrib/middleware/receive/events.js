@@ -15,7 +15,7 @@ export default async function events({ ctx, message, next }) {
   }
 
   const { bot: { identity: { id: botId } } } = ctx
-  const directMention = new RegExp(`^\<\@${botId}\>`, 'i')
+  const directMention = new RegExp(`^\<\@${botId}[^\>]*\>`, 'i')
   if (message.type === 'message') {
     if (message.text) {
       message.text = message.text.trim()
@@ -41,7 +41,7 @@ export default async function events({ ctx, message, next }) {
       }
       message.event = 'direct_message'
     } else {
-      const mention = new RegExp(`\<\@${botId}\>`, 'i')
+      const mention = new RegExp(`\<\@${botId}[^\>]*\>`, 'i')
       if (message.text && message.text.match(directMention)) {
         message.text = replaceDirectMention(directMention, message.text)
         message.event = 'direct_mention'
