@@ -35,8 +35,6 @@ export default async function events({ ctx, message, next }) {
       }
     } else if (message.user === botId) {
       message.event = 'self'
-    } else if (message.subtype === 'bot_message') {
-      message.event = 'bot_message'
     } else if (message.channel.match(/^D/)) {
       if (message.text) {
         message.text = replaceDirectMention(directMention, message.text)
@@ -54,7 +52,7 @@ export default async function events({ ctx, message, next }) {
       }
     }
 
-    if (!message.subtype && message.event) {
+    if ((!message.subtype || message.subtype === 'bot_message') && message.event) {
       message.event = `${message.event}:message`
     }
   } else if (message.type === 'reaction_added') {
