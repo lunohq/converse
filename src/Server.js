@@ -7,17 +7,28 @@ const debug = require('debug')('converse:Server')
 
 const SLACK_AUTHORIZE_ENDPOINT = 'https://slack.com/oauth/authorize'
 
+function defaultIsNewUser(user) {
+  return !user
+}
+
 class Server extends EventEmitter {
 
   constructor(config) {
     super()
-    const { clientId, clientSecret, storage, scopes, logger } = config
+    const {
+      clientId,
+      clientSecret,
+      storage,
+      scopes,
+      logger,
+      isNewUser,
+    } = config
     this.storage = storage
     this.clientId = clientId
     this.clientSecret = clientSecret
     this.scopes = scopes
     this.logger = logger || console
-
+    this.isNewUser = isNewUser || defaultIsNewUser
     this.validate()
   }
 
@@ -200,12 +211,13 @@ class Server extends EventEmitter {
 
     const scopes = auth.scope.split(',')
     let user = await this.storage.users.get(userDetails.id)
-    if (!user) {
+    const isNewUser = await this.isNewUser(user)
+    if (isNewUser) {
       isNew.user = true
-      user = {
-        id: userDetails.id,
-        teamId: teamDetails.id,
+      if (typeof user !== 'object') {
+        user = { id: userDetails.id }
       }
+      user.teamId = teamDetails.id
     }
 
     for (const key of Object.keys(userDetails)) {
