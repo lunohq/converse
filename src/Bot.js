@@ -51,6 +51,7 @@ class Bot extends Emitter {
   constructor(config) {
     super()
     this.config = config
+    this.connected = false
 
     const { logger, team, receive, send, sent } = config
     // TODO Add invariant checks for the structure of team we expect
@@ -89,7 +90,10 @@ class Bot extends Emitter {
       this.rtm.on(event, (message) => this.receive(message))
     }
 
-    this.rtm.on(CLIENT_EVENTS.RTM.DISCONNECT, (err, code) => this.emit(DISCONNECT, err, code))
+    this.rtm.on(CLIENT_EVENTS.RTM.DISCONNECT, (err, code) => {
+      this.connected = false
+      this.emit(DISCONNECT, err, code)
+    })
     this.rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, () => {
       debug('Fetching identity', { userId: this.rtm.activeUserId })
       this.identity = this.rtm.dataStore.getUserById(this.rtm.activeUserId)
@@ -98,6 +102,7 @@ class Bot extends Emitter {
       } else {
         debug('Attached identity', { identity: this.identity })
       }
+      this.connected = true
       this.emit(CONNECTED)
     })
     this.rtm.start()

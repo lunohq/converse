@@ -28,8 +28,19 @@ class Controller {
     debug('Spawning bot for team', { teamId })
 
     if (this.bots[teamId] !== undefined) {
-      debug('Team already connected', { teamId })
-      return this.bots[teamId]
+      const bot = this.bots[teamId]
+      return new Promise((resolve) => {
+        if (bot.connected) {
+          debug('Team already connected', { teamId })
+          resolve(bot)
+        } else {
+          debug('Team connecting', { teamId })
+          bot.on(CONNECTED, () => {
+            debug('Team finished connecting', { teamId })
+            resolve(bot)
+          })
+        }
+      })
     }
 
     debug('Retrieving team', { teamId })
