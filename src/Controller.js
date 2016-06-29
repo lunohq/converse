@@ -1,4 +1,4 @@
-import Bot, { DISCONNECT, CONNECTED } from './Bot'
+import Bot, { DISCONNECT, CONNECTED, UNABLE_TO_RTM_START, WS_ERROR } from './Bot'
 import Context from './Context'
 import Middleware from './Middleware'
 
@@ -62,10 +62,20 @@ class Controller {
     debug('Starting bot', { bot })
     bot.start()
 
+    bot.on(WS_ERROR, (err) => {
+      this.logger.error('Bot websocket error', { teamId, err })
+      delete this.bots[teamId]
+    })
+
     return new Promise((resolve, reject) => {
       bot.on(CONNECTED, () => {
         debug('Bot started', { teamId })
         resolve(bot)
+      })
+      bot.on(UNABLE_TO_RTM_START, (err) => {
+        this.logger.error('Unable to connect bot', { err, teamId })
+        delete this.bots[teamId]
+        reject(err)
       })
       bot.on(DISCONNECT, (err, code) => {
         this.logger.info('Bot disconnected', { teamId, err, code })

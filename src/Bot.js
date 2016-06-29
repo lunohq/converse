@@ -8,6 +8,8 @@ const debug = require('debug')('converse:Bot')
 
 export const DISCONNECT = CLIENT_EVENTS.RTM.DISCONNECT
 export const CONNECTED = CLIENT_EVENTS.RTM_CONNECTION_OPENED
+export const UNABLE_TO_RTM_START = CLIENT_EVENTS.RTM.UNABLE_TO_RTM_START
+export const WS_ERROR = CLIENT_EVENTS.RTM.WS_ERROR
 
 function send({ ctx, message }) {
   if (ctx.send === false) {
@@ -90,9 +92,18 @@ class Bot extends Emitter {
       this.rtm.on(event, (message) => this.receive(message))
     }
 
+    // Emit messages related to the lifecylce of the connection
     this.rtm.on(CLIENT_EVENTS.RTM.DISCONNECT, (err, code) => {
       this.connected = false
       this.emit(DISCONNECT, err, code)
+    })
+    this.rtm.on(CLIENT_EVENTS.RTM.UNABLE_TO_RTM_START, (err) => {
+      this.connected = false
+      this.emit(UNABLE_TO_RTM_START, err)
+    })
+    this.rtm.on(CLIENT_EVENTS.RTM.WS_ERROR, (err) => {
+      this.connected = false
+      this.emit(WS_ERROR, err)
     })
     this.rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, () => {
       debug('Fetching identity', { userId: this.rtm.activeUserId })
