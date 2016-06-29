@@ -9,8 +9,8 @@ class Context {
     Object.assign(this, ctx)
   }
 
-  onerror(err) {
-    this.logger.error('unhandled middleware error', err)
+  onError(err) {
+    this.logger.error('unhandled middleware error', { err, ctx: this })
   }
 
 }

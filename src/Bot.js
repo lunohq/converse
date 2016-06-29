@@ -82,8 +82,8 @@ class Bot extends Emitter {
     }
   }
 
-  createContext() {
-    return new Context({ logger: this.logger, team: this.team, bot: this })
+  createContext(opts) {
+    return new Context({ logger: this.logger, team: this.team, bot: this, ...opts })
   }
 
   start() {
@@ -121,7 +121,7 @@ class Bot extends Emitter {
 
   receive(message) {
     debug('Received message', { team: this.team, message })
-    const ctx = this.createContext()
+    const ctx = this.createContext({ message })
     return this.middleware.receive.run({ ctx, message })
   }
 
@@ -149,7 +149,7 @@ class Bot extends Emitter {
 
   send = async (source, message) => {
     debug('Send', { team: this.team, message, source })
-    const ctx = this.createContext()
+    const ctx = this.createContext({ message })
     await this.middleware.send.run({ ctx, message, source })
     const response = await send({ ctx, message })
     debug('Sent', { response })
