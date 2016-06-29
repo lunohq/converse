@@ -9,9 +9,10 @@ class Controller {
   constructor(config) {
     this.config = config
 
-    const { logger, getTeam, } = config
+    const { logger, getTeam, onInactive } = config
     // TODO add invariant
     this.getTeam = getTeam
+    this.handleInactive = typeof onInactive === 'function' ? onInactive : () => {}
     this.bots = {}
     this.logger = typeof logger === 'object' ? logger : console
     this.middleware = {
@@ -66,19 +67,21 @@ class Controller {
       this.logger.error('Bot websocket error', { teamId, err })
       delete this.bots[teamId]
     })
+    bot.on(UNABLE_TO_RTM_START, (err) => {
+      this.logger.error('Unable to connect bot', { err, teamId })
+      delete this.bots[teamId]
+    })
 
     return new Promise((resolve, reject) => {
       bot.on(CONNECTED, () => {
         debug('Bot started', { teamId })
         resolve(bot)
       })
-      bot.on(UNABLE_TO_RTM_START, (err) => {
-        this.logger.error('Unable to connect bot', { err, teamId })
-        delete this.bots[teamId]
-        reject(err)
-      })
       bot.on(DISCONNECT, (err, code) => {
         this.logger.info('Bot disconnected', { teamId, err, code })
+        if (code === 'account_inactive') {
+          this.handleInactive(teamId)
+        }
         delete this.bots[teamId]
         reject(err, code)
       })
