@@ -97,9 +97,9 @@ class Bot extends Emitter {
       this.connected = false
       this.emit(DISCONNECT, err, code)
     })
-    this.rtm.on(CLIENT_EVENTS.RTM.UNABLE_TO_RTM_START, (err) => {
+    this.rtm.on(CLIENT_EVENTS.RTM.UNABLE_TO_RTM_START, (message) => {
       this.connected = false
-      this.emit(UNABLE_TO_RTM_START, err)
+      this.emit(UNABLE_TO_RTM_START, new Error(message))
     })
     this.rtm.on(CLIENT_EVENTS.RTM.WS_ERROR, (err) => {
       this.connected = false
