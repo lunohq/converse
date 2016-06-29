@@ -59,7 +59,7 @@ class Controller {
     })
     this.bots[teamId] = bot
 
-    debug('Starting bot', { bot })
+    debug('Starting bot', { teamId })
     bot.start()
 
     bot.on(WS_ERROR, (err) => {
