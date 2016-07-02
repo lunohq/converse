@@ -65,7 +65,6 @@ class Controller {
 
     bot.on(WS_ERROR, (err) => {
       this.logger.error('Bot websocket error', { teamId, err })
-      delete this.bots[teamId]
     })
     bot.on(UNABLE_TO_RTM_START, (err) => {
       this.logger.error('Unable to connect bot', { err, teamId })
