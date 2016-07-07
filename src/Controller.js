@@ -1,4 +1,4 @@
-import Bot, { DISCONNECT, CONNECTED, WS_ERROR, HEALTHY } from './Bot'
+import Bot, { DISCONNECT, CONNECTED, WS_ERROR, WS_CLOSE, HEALTHY } from './Bot'
 import Context from './Context'
 import Middleware from './Middleware'
 
@@ -9,11 +9,13 @@ class Controller {
   constructor(config) {
     this.config = config
 
-    const { logger, getTeam, onInactive, onHealthy } = config
+    const { logger, getTeam, onInactive, onHealthy, onWarning, onDisconnect } = config
     // TODO add invariant
     this.getTeam = getTeam
     this.handleHealthy = typeof onHealthy === 'function' ? onHealthy : () => {}
     this.handleInactive = typeof onInactive === 'function' ? onInactive : () => {}
+    this.handleWarning = typeof onWarning === 'function' ? onWarning : () => {}
+    this.handleDisconnect = typeof onDisconnect === 'function' ? onDisconnect : () => {}
     this.bots = {}
     this.logger = typeof logger === 'object' ? logger : console
     this.middleware = {
@@ -70,9 +72,11 @@ class Controller {
     bot.start()
 
     bot.on(HEALTHY, () => this.handleHealthy(bot))
-    // TODO remove in the future
     bot.on(WS_ERROR, (err) => {
-      this.logger.error('Bot websocket error', { teamId, err })
+      this.handleWarning({ bot, err })
+    })
+    bot.on(WS_CLOSE, (code, reason) => {
+      this.handleWarning({ bot, code, reason })
     })
     return new Promise((resolve, reject) => {
       bot.on(CONNECTED, () => {
@@ -81,6 +85,7 @@ class Controller {
       })
       bot.on(DISCONNECT, (err, code) => {
         this.logger.info('Bot disconnected', { teamId, err, code })
+        this.handleDisconnect({ bot, err, code })
         if (code === 'account_inactive') {
           this.handleInactive(teamId)
         }

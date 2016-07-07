@@ -8,6 +8,7 @@ const debug = require('debug')('converse:Bot')
 
 export const DISCONNECT = CLIENT_EVENTS.RTM.DISCONNECT
 export const CONNECTED = CLIENT_EVENTS.RTM_CONNECTION_OPENED
+export const WS_CLOSE = CLIENT_EVENTS.RTM.WS_CLOSE
 export const WS_ERROR = CLIENT_EVENTS.RTM.WS_ERROR
 export const HEALTHY = 'healthy'
 
@@ -100,6 +101,10 @@ class Bot extends Emitter {
     this.rtm.on(CLIENT_EVENTS.RTM.WS_ERROR, (err) => {
       this.connected = false
       this.emit(WS_ERROR, err)
+    })
+    this.rtm.on(CLIENT_EVENTS.RTM.WS_CLOSE, (code, reason) => {
+      this.connected = false
+      this.emit(WS_CLOSE, code, reason)
     })
     this.rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, () => {
       debug('Fetching identity', { userId: this.rtm.activeUserId })
