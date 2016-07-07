@@ -82,7 +82,7 @@ class Controller {
     })
     return new Promise((resolve, reject) => {
       bot.on(CONNECTED, () => {
-        this.logger.info('Bot started', { teamId })
+        this.logger.info('Bot connected', { teamId })
         this.handleConnect(bot)
         resolve(bot)
       })
