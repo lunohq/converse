@@ -71,11 +71,6 @@ class Controller {
     bot.on(WS_ERROR, (err) => {
       this.logger.error('Bot websocket error', { teamId, err })
     })
-    bot.on(UNABLE_TO_RTM_START, (err) => {
-      this.logger.error('Unable to connect bot', { err, teamId })
-      delete this.bots[teamId]
-    })
-
     return new Promise((resolve, reject) => {
       bot.on(CONNECTED, () => {
         debug('Bot started', { teamId })
