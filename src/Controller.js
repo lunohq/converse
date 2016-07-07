@@ -1,4 +1,4 @@
-import Bot, { DISCONNECT, CONNECTED, UNABLE_TO_RTM_START, WS_ERROR } from './Bot'
+import Bot, { DISCONNECT, CONNECTED, WS_ERROR } from './Bot'
 import Context from './Context'
 import Middleware from './Middleware'
 
