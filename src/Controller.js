@@ -73,7 +73,7 @@ class Controller {
     })
     return new Promise((resolve, reject) => {
       bot.on(CONNECTED, () => {
-        debug('Bot started', { teamId })
+        this.logger.info('Bot started', { teamId })
         resolve(bot)
       })
       bot.on(DISCONNECT, (err, code) => {
