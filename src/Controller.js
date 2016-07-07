@@ -9,13 +9,15 @@ class Controller {
   constructor(config) {
     this.config = config
 
-    const { logger, getTeam, onInactive, onHealthy, onWarning, onDisconnect } = config
+    const { logger, getTeam, onInactive, onHealthy, onWarning, onDisconnect, onConnect } = config
     // TODO add invariant
     this.getTeam = getTeam
+    // TODO these should be emitted as events
     this.handleHealthy = typeof onHealthy === 'function' ? onHealthy : () => {}
     this.handleInactive = typeof onInactive === 'function' ? onInactive : () => {}
     this.handleWarning = typeof onWarning === 'function' ? onWarning : () => {}
     this.handleDisconnect = typeof onDisconnect === 'function' ? onDisconnect : () => {}
+    this.handleConnect = typeof onConnect === 'function' ? onConnect : () => {}
     this.bots = {}
     this.logger = typeof logger === 'object' ? logger : console
     this.middleware = {
@@ -81,6 +83,7 @@ class Controller {
     return new Promise((resolve, reject) => {
       bot.on(CONNECTED, () => {
         this.logger.info('Bot started', { teamId })
+        this.handleConnect(bot)
         resolve(bot)
       })
       bot.on(DISCONNECT, (err, code) => {
