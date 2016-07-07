@@ -9,6 +9,7 @@ const debug = require('debug')('converse:Bot')
 export const DISCONNECT = CLIENT_EVENTS.RTM.DISCONNECT
 export const CONNECTED = CLIENT_EVENTS.RTM_CONNECTION_OPENED
 export const WS_ERROR = CLIENT_EVENTS.RTM.WS_ERROR
+export const HEALTHY = 'healthy'
 
 function send({ ctx, message }) {
   if (ctx.send === false) {
@@ -111,6 +112,7 @@ class Bot extends Emitter {
       this.connected = true
       this.emit(CONNECTED)
     })
+    this.rtm.on(CLIENT_EVENTS.RTM.PONG, () => this.emit(HEALTHY))
     this.rtm.start()
   }
 

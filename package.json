@@ -57,6 +57,6 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
-    "@slack/client": "git+https://git@github.com/lunohq/node-slack-sdk.git#e0203d75453064eb0b1cf0632dd94cccc9b3bcfc"
+    "@slack/client": "git+https://git@github.com/lunohq/node-slack-sdk.git#ff0e79718ff98ce164c844aa2d53cd5ea5561f87"
   }
 }

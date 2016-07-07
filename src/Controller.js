@@ -1,4 +1,4 @@
-import Bot, { DISCONNECT, CONNECTED, WS_ERROR } from './Bot'
+import Bot, { DISCONNECT, CONNECTED, WS_ERROR, HEALTHY } from './Bot'
 import Context from './Context'
 import Middleware from './Middleware'
 
@@ -9,9 +9,10 @@ class Controller {
   constructor(config) {
     this.config = config
 
-    const { logger, getTeam, onInactive } = config
+    const { logger, getTeam, onInactive, onHealthy } = config
     // TODO add invariant
     this.getTeam = getTeam
+    this.handleHealthy = typeof onHealthy === 'function' ? onHealthy : () => {}
     this.handleInactive = typeof onInactive === 'function' ? onInactive : () => {}
     this.bots = {}
     this.logger = typeof logger === 'object' ? logger : console
@@ -68,6 +69,8 @@ class Controller {
     debug('Starting bot', { teamId })
     bot.start()
 
+    bot.on(HEALTHY, () => this.handleHealthy(bot))
+    // TODO remove in the future
     bot.on(WS_ERROR, (err) => {
       this.logger.error('Bot websocket error', { teamId, err })
     })
