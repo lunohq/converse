@@ -30,17 +30,22 @@ class Controller {
 
     if (this.bots[teamId] !== undefined) {
       const bot = this.bots[teamId]
-      return new Promise((resolve) => {
+      return new Promise((resolve, reject) => {
         if (bot.connected) {
           debug('Team already connected', { teamId })
           resolve(bot)
-        } else {
-          debug('Team connecting', { teamId })
-          bot.on(CONNECTED, () => {
-            debug('Team finished connecting', { teamId })
-            resolve(bot)
-          })
+          return
         }
+
+        debug('Team connecting', { teamId })
+        bot.once(CONNECTED, () => {
+          debug('Team finished connecting', { teamId })
+          resolve(bot)
+        })
+        bot.once(DISCONNECT, (err) => {
+          debug('Can\'t connect team', { teamId })
+          reject(err)
+        })
       })
     }
 
