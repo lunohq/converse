@@ -1,8 +1,9 @@
 import Emitter from 'events'
 
-import { RtmClient, RTM_EVENTS, CLIENT_EVENTS, WebClient, MemoryDataStore } from '@slack/client'
+import { RtmClient, RTM_EVENTS, CLIENT_EVENTS, WebClient } from '@slack/client'
 
 import Context from './Context'
+import DataStore from './DataStore'
 
 const debug = require('debug')('converse:Bot')
 
@@ -51,7 +52,7 @@ function send({ ctx, message }) {
 
 class Bot extends Emitter {
 
-  constructor(config) {
+  constructor(config = {}) {
     super()
     this.config = config
     this.connected = false
@@ -61,13 +62,12 @@ class Bot extends Emitter {
     this.config.token = team.token
     this.team = team
     this.logger = logger
-    this.config = config !== undefined ? config : {}
     this.identity = {}
 
     let rtmConfig
     if (config.rtm === undefined) {
       rtmConfig = {
-        dataStore: new MemoryDataStore(),
+        dataStore: new DataStore(config.dataStoreOpts),
         autoReconnect: true,
       }
     } else {

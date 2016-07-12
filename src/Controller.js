@@ -6,8 +6,11 @@ const debug = require('debug')('converse:Controller')
 
 class Controller {
 
-  constructor(config) {
+  constructor(config = {}) {
     this.config = config
+    if (this.config.botConfig === undefined) {
+      this.config.botConfig = {}
+    }
 
     const { logger, getTeam, onInactive, onHealthy, onWarning, onDisconnect, onConnect } = config
     // TODO add invariant
@@ -67,6 +70,7 @@ class Controller {
       receive: this.middleware.receive,
       send: this.middleware.send,
       sent: this.middleware.sent,
+      ...this.config.botConfig,
     })
     this.bots[teamId] = bot
 
