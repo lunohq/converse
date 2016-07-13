@@ -10,6 +10,17 @@ class DataStore extends MemoryDataStore {
       redisDataStoreOpts = { keyPrefix: `s.cache.${opts.team.id}.`, ...redisDataStoreOpts }
     }
     this.redisDataStore = new RedisDataStore(redisDataStoreOpts)
+    // sync the redis data store with the in memory data store every 30 seconds
+    setInterval(() => {
+      this.redisDataStore.cacheData({
+        users: this.users,
+        channels: this.channels,
+        dms: this.dms,
+        groups: this.groups,
+        bots: this.bots,
+        teams: this.teams,
+      })
+    }, 1000 * 30)
   }
 
   cacheRtmStart(data) {
