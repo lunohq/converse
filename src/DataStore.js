@@ -5,7 +5,11 @@ class DataStore extends MemoryDataStore {
 
   constructor(opts = {}) {
     super(opts)
-    this.redisDataStore = new RedisDataStore(opts.redisDataStoreOpts)
+    let { redisDataStoreOpts } = opts
+    if (opts.team) {
+      redisDataStoreOpts = { keyPrefix: `s.cache.${opts.team.id}.`, ...redisDataStoreOpts }
+    }
+    this.redisDataStore = new RedisDataStore(redisDataStoreOpts)
   }
 
   cacheRtmStart(data) {

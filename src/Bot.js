@@ -66,8 +66,9 @@ class Bot extends Emitter {
 
     let rtmConfig
     if (config.rtm === undefined) {
+      const opts = { team, ...config.dataStoreOpts }
       rtmConfig = {
-        dataStore: new DataStore(config.dataStoreOpts),
+        dataStore: new DataStore(opts),
         autoReconnect: true,
       }
     } else {
