@@ -17,6 +17,9 @@ export default async function events({ ctx, message, next }) {
   const { bot: { identity: { id: botId } } } = ctx
   const directMention = new RegExp(`^\<\@${botId}[^\>]*\>`, 'i')
   if (message.type === 'message') {
+    /* eslint-disable no-underscore-dangle */
+    message._raw = message.text
+    /* eslint-enable no-underscore-dangle */
     if (message.text) {
       message.text = message.text.trim()
     }
