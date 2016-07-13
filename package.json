@@ -1,6 +1,6 @@
 {
   "name": "converse",
-  "version": "0.0.2-40",
+  "version": "0.0.2-41",
   "description": "Framework for building conversational bots",
   "main": "lib/index.js",
   "scripts": {
