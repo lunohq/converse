@@ -12,14 +12,15 @@ class DataStore extends MemoryDataStore {
     this.redisDataStore = new RedisDataStore(redisDataStoreOpts)
     // sync the redis data store with the in memory data store every 30 seconds
     setInterval(() => {
-      this.redisDataStore.cacheData({
-        users: this.users,
-        channels: this.channels,
-        dms: this.dms,
-        groups: this.groups,
-        bots: this.bots,
-        teams: this.teams,
-      })
+      const data = {
+        users: Object.values(this.users).map(obj => obj.toJSON()),
+        channels: Object.values(this.channels).map(obj => obj.toJSON()),
+        dms: Object.values(this.dms).map(obj => obj.toJSON()),
+        groups: Object.values(this.groups).map(obj => obj.toJSON()),
+        bots: Object.values(this.bots),
+        teams: Object.values(this.teams),
+      }
+      this.redisDataStore.cacheData(data)
     }, 1000 * 30)
   }
 
