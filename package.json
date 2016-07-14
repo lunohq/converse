@@ -58,6 +58,6 @@
   },
   "dependencies": {
     "@slack/client": "git+https://git@github.com/lunohq/node-slack-sdk.git#164c1092c17369371dbd42e659230e79fafb1039",
-    "slack-redis-data-store": "git+https://git@github.com/lunohq/slack-redis-data-store.git#f6b473afebc0f265b9cbed5e975ba958dac08771"
+    "slack-redis-data-store": "git+https://git@github.com/lunohq/slack-redis-data-store.git#ccd1a6ac00c8386fdd32e0dddae671bb359f787b"
   }
 }
