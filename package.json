@@ -57,7 +57,7 @@
     "vinyl-source-stream": "^1.1.0"
   },
   "dependencies": {
-    "@slack/client": "git+https://git@github.com/lunohq/node-slack-sdk.git#164c1092c17369371dbd42e659230e79fafb1039",
+    "@slack/client": "git+https://git@github.com/lunohq/node-slack-sdk.git#a49d1811481a06e5d87600fd6cb95c4d428b4ae2",
     "slack-redis-data-store": "git+https://git@github.com/lunohq/slack-redis-data-store.git#33a9efa32a97197df3776dedd113b677ff66b419"
   }
 }
