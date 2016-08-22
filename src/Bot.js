@@ -1,9 +1,9 @@
 import Emitter from 'events'
 
 import { RtmClient, RTM_EVENTS, CLIENT_EVENTS, WebClient } from '@slack/client'
+import RedisDataStore from 'slack-redis-data-store'
 
 import Context from './Context'
-import DataStore from './DataStore'
 
 const debug = require('debug')('converse:Bot')
 
@@ -66,9 +66,12 @@ class Bot extends Emitter {
 
     let rtmConfig
     if (config.rtm === undefined) {
-      const opts = { team, ...config.dataStoreOpts }
+      const opts = {
+        keyPrefix: `s.cache.${team.id}.`,
+        ...config.dataStoreOpts,
+      }
       rtmConfig = {
-        dataStore: new DataStore(opts),
+        dataStore: new RedisDataStore(opts),
         autoReconnect: true,
       }
     } else {
@@ -107,9 +110,13 @@ class Bot extends Emitter {
       this.connected = false
       this.emit(WS_CLOSE, code, reason)
     })
-    this.rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, () => {
+    this.rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, async () => {
       debug('Fetching identity', { userId: this.rtm.activeUserId })
-      this.identity = this.rtm.dataStore.getUserById(this.rtm.activeUserId)
+      try {
+        this.identity = await this.rtm.dataStore.getUserById(this.rtm.activeUserId)
+      } catch (err) {
+        this.logger.error('Error fetching identity', { userId: this.rtm.activeUserId })
+      }
       if (!this.identity) {
         this.logger.warning('Failed to find identity', { userId: this.rtm.activeUserId })
       } else {
