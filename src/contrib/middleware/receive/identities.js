@@ -9,8 +9,12 @@ export default async function identities({ ctx, next }) {
   let team = {}
   debug('Attaching identities')
   if (rtm.dataStore) {
-    bot = rtm.dataStore.getUserById(botId)
-    team = rtm.dataStore.getTeamById(teamId)
+    const results = await Promise.all([
+      rtm.dataStore.getUserById(botId),
+      rtm.dataStore.getTeamById(teamId),
+    ])
+    bot = results[0]
+    team = results[1]
   } else {
     debug('No datastore configured for rtm')
   }
