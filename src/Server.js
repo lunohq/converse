@@ -267,7 +267,7 @@ class Server extends EventEmitter {
       } catch (err) {
         this.logger.error('Error handing OAuth response', err)
         if (cb) {
-          cb(err, req, res)
+          await cb(err, req, res)
         } else {
           res.status(500).send(err)
         }
@@ -276,7 +276,7 @@ class Server extends EventEmitter {
       }
 
       if (cb) {
-        cb(null, req, res)
+        await cb(null, req, res)
       } else {
         res.redirect('/')
       }
