@@ -1,0 +1,16 @@
+{
+  "parser": "babel-eslint",
+  "extends": "airbnb",
+  "env": {
+    "node": true
+  },
+  "rules": {
+    "guard-for-in": 0,
+    "arrow-body-style": 0,
+    "comma-dangle": 0,
+    "max-len": 0,
+    "no-shadow": 0,
+    "spaced-comment": 0,
+    "semi": 0
+  }
+}
